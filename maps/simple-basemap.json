@@ -1,0 +1,42 @@
+{
+   "version": 1,
+   "id": "simple-topographic",
+   "name": "simple-topographic",
+   "sources": {
+      "LINZ Basemaps": {
+         "attribution": "© 2022 Toitū Te Whenua - CC BY 4.0",
+         "type": "vector",
+         "url": "https://basemaps.linz.govt.nz/v1/tiles/topographic/EPSG:3857/tile.json?api=c01j0w4y9gsa07n866bzv7cw64t"
+      },
+      "LINZ-Texture-Relief": {
+         "tiles": [
+            "https://basemaps.linz.govt.nz/v1/tiles/texturereliefshade/EPSG:3857/{z}/{x}/{y}.webp?api=c01j0w4y9gsa07n866bzv7cw64t"
+         ],
+         "type": "raster",
+         "maxzoom": 20,
+         "minzoom": 0,
+         "tileSize": 256
+      }
+   },
+   "layers": [
+      {
+         "filter": ["all", ["==", "class", "dock"]],
+         "layout": { "visibility": "visible" },
+         "paint": { "background-color": "#E8ECEE" },
+         "id": "Background",
+         "type": "background",
+         "minzoom": 0
+      },
+      {
+         "filter": ["all", ["==", "class", "sand"]],
+         "layout": { "visibility": "visible" },
+         "paint": { "fill-color": "#CBCDD5" }, 
+         "id": "Landcover",
+         "source": "LINZ Basemaps",
+         "source-layer": "landcover",
+         "type": "fill",
+         "minzoom": 0
+      }
+   ],
+   "metadata": { "maputnik:renderer": "mbgljs" }
+}
