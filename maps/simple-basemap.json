@@ -34,6 +34,26 @@
          "source-layer": "coastline",
          "type": "fill",
          "minzoom": 0
+      },
+      {
+         "layout": { "visibility": "visible" },
+         "paint": {
+            "raster-brightness-min": 0,
+            "raster-opacity": {
+               "stops": [
+                  [1, 0.35],
+                  [7, 0.35],
+                  [8, 0.65],
+                  [15, 0.65],
+                  [16, 0.3]
+               ]
+            },
+            "raster-resampling": "nearest",
+            "raster-contrast": 0
+         },
+         "id": "texture-relief-combined",
+         "source": "LINZ-Texture-Relief",
+         "type": "raster"
       }
    ],
    "metadata": { "maputnik:renderer": "mbgljs" }
