@@ -20,7 +20,6 @@
    },
    "layers": [
       {
-         "filter": ["all", ["==", "class", "dock"]],
          "layout": { "visibility": "visible" },
          "paint": { "background-color": "#E8ECEE" },
          "id": "Background",
@@ -28,7 +27,6 @@
          "minzoom": 0
       },
       {
-         "filter": ["all", ["==", "class", "sand"]],
          "layout": { "visibility": "visible" },
          "paint": { "fill-color": "#CBCDD5" }, 
          "id": "Landcover",
