@@ -28,10 +28,10 @@
       },
       {
          "layout": { "visibility": "visible" },
-         "paint": { "fill-color": "#CBCDD5" }, 
-         "id": "Landcover",
+         "paint": { "fill-color": "#CBCDD5" },
+         "id": "Coastline2",
          "source": "LINZ Basemaps",
-         "source-layer": "landcover",
+         "source-layer": "coastline",
          "type": "fill",
          "minzoom": 0
       }
