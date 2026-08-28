@@ -98,3 +98,96 @@ grep ' databricks-dashboard-theme.json$' SHA256SUMS | sha256sum -c -
 
 The downloaded theme can then be merged into the dashboard's
 `uiSettings.theme` during its build, before bundle validation and deployment.
+
+### Use a pinned release in an R Shiny dashboard
+
+Download and verify the required assets during the application build rather
+than making the deployed application depend on GitHub at runtime:
+
+```bash
+styles_version="v0.1.0"
+release_url="https://github.com/EECA-NZ/data-visualisation-styles/releases/download/${styles_version}"
+download_dir="$(mktemp -d)"
+
+curl -fsSLo "${download_dir}/tokens.css" "${release_url}/tokens.css"
+curl -fsSLo "${download_dir}/tokens.json" "${release_url}/tokens.json"
+curl -fsSLo "${download_dir}/SHA256SUMS" "${release_url}/SHA256SUMS"
+
+(
+  cd "${download_dir}"
+  grep -E ' (tokens.css|tokens.json)$' SHA256SUMS | sha256sum -c -
+)
+
+install -D "${download_dir}/tokens.css" www/vendor/eeca/tokens.css
+install -D "${download_dir}/tokens.json" www/vendor/eeca/tokens.json
+```
+
+Load the CSS tokens in `app.R` and read the same release's JSON tokens for
+Plotly colours:
+
+```r
+library(jsonlite)
+library(plotly)
+library(shiny)
+
+tokens <- read_json(
+  file.path("www", "vendor", "eeca", "tokens.json"),
+  simplifyVector = TRUE
+)
+
+ui <- fluidPage(
+  tags$head(
+    tags$link(rel = "stylesheet", href = "vendor/eeca/tokens.css"),
+    tags$link(rel = "stylesheet", href = "app.css")
+  ),
+  h1("Energy use in New Zealand"),
+  div(class = "dashboard-card", plotlyOutput("energy_plot"))
+)
+
+server <- function(input, output, session) {
+  output$energy_plot <- renderPlotly({
+    plot_ly(
+      iris,
+      x = ~Sepal.Length,
+      y = ~Petal.Length,
+      color = ~Species,
+      colors = tokens$palettes$categorical,
+      type = "scatter",
+      mode = "markers"
+    ) |>
+      layout(
+        font = list(
+          family = "Arial, sans-serif",
+          size = 14,
+          color = tokens$colors$interface$text
+        ),
+        paper_bgcolor = tokens$colors$interface$surface,
+        plot_bgcolor = tokens$colors$interface$surface
+      )
+  })
+}
+
+shinyApp(ui, server)
+```
+
+Application-specific layout can then reference the shared properties from
+`www/app.css` without copying brand values:
+
+```css
+body {
+  background: var(--eeca-page);
+  color: var(--eeca-text);
+  font-family: var(--eeca-font-family-web);
+}
+
+.dashboard-card {
+  background: var(--eeca-surface);
+  border: 1px solid var(--eeca-border);
+  border-radius: var(--eeca-corner-radius);
+  padding: 1rem;
+}
+```
+
+An authorised app can load its licensed National 2 web fonts before
+`tokens.css`; otherwise the shared font stack falls back to Arial. Apps that
+compile Sass can pin and download `_tokens.scss` in the same way.
