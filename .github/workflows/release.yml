@@ -1,0 +1,96 @@
+name: Release generated styles
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Validate semantic tag
+        id: version
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          tag="${GITHUB_REF_NAME}"
+          if [[ ! "$tag" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo "::error ::Unsupported tag '$tag'. Expected vX.Y.Z or vX.Y.Z-prerelease."
+            exit 1
+          fi
+
+          version="${tag#v}"
+          if [[ "$version" == *-* ]]; then
+            echo "prerelease=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "prerelease=false" >> "$GITHUB_OUTPUT"
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Generate and test
+        run: |
+          python3 scripts/generate.py
+          python3 scripts/generate.py --check
+          python3 -m unittest discover -s tests -v
+
+      - name: Package release assets
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          version="${{ steps.version.outputs.version }}"
+          package_dir="${RUNNER_TEMP}/eeca-data-visualisation-styles-${version}"
+          mkdir -p release "$package_dir"
+          cp -R dist "$package_dir/dist"
+          cp -R maps "$package_dir/maps"
+
+          jq -n \
+            --arg version "$version" \
+            --arg tag "$GITHUB_REF_NAME" \
+            --arg commit "$GITHUB_SHA" \
+            '{version: $version, tag: $tag, commit: $commit}' \
+            > release/release-manifest.json
+          cp release/release-manifest.json "$package_dir/release-manifest.json"
+
+          cp dist/json/databricks-dashboard-theme.json release/databricks-dashboard-theme.json
+          cp dist/json/tokens.json release/tokens.json
+          cp dist/css/tokens.css release/tokens.css
+          cp dist/scss/_tokens.scss release/_tokens.scss
+          cp dist/python/eeca_visualisation_styles.py release/eeca_visualisation_styles.py
+          cp maps/simple-basemap.json release/simple-basemap.json
+          tar -C "${RUNNER_TEMP}" -czf "release/eeca-data-visualisation-styles-${version}.tar.gz" \
+            "eeca-data-visualisation-styles-${version}"
+
+          cd release
+          sha256sum ./* > SHA256SUMS
+
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PRERELEASE: ${{ steps.version.outputs.prerelease }}
+          VERSION: ${{ steps.version.outputs.version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          args=(
+            "$GITHUB_REF_NAME"
+            release/*
+            --verify-tag
+            --generate-notes
+            --title "EECA data visualisation styles ${VERSION}"
+          )
+          if [[ "$PRERELEASE" == "true" ]]; then
+            args+=(--prerelease)
+          fi
+          gh release create "${args[@]}"
