@@ -66,12 +66,12 @@ Pushing a semantic tag builds and publishes immutable GitHub Release assets:
 - Stable: `v1.2.3`
 - Pre-release: `v1.2.3-rc1`
 
-The tag without its leading `v` must exactly match `version` in
-`tokens/tokens.json`. A release contains each generated format, the existing map
-style, a complete tarball, and `SHA256SUMS`.
+A release contains each generated format, the existing map style, a complete
+tarball, `SHA256SUMS`, and a generated manifest recording its version, tag, and
+source commit. GitHub generates the human-readable release notes from the
+commits associated with the tag.
 
-To release, update the token version in a pull request, merge it, and tag that
-exact commit:
+To release, merge the approved style changes and tag that exact commit:
 
 ```bash
 git tag v0.1.0
@@ -93,7 +93,7 @@ release_url="https://github.com/EECA-NZ/data-visualisation-styles/releases/downl
 
 curl -fsSLO "${release_url}/databricks-dashboard-theme.json"
 curl -fsSLO "${release_url}/SHA256SUMS"
-grep ' databricks-dashboard-theme.json$' SHA256SUMS | sha256sum -c -
+grep -E ' (\./)?databricks-dashboard-theme.json$' SHA256SUMS | sha256sum -c -
 ```
 
 The downloaded theme can then be merged into the dashboard's
@@ -115,7 +115,7 @@ curl -fsSLo "${download_dir}/SHA256SUMS" "${release_url}/SHA256SUMS"
 
 (
   cd "${download_dir}"
-  grep -E ' (tokens.css|tokens.json)$' SHA256SUMS | sha256sum -c -
+  grep -E ' (\./)?(tokens.css|tokens.json)$' SHA256SUMS | sha256sum -c -
 )
 
 install -D "${download_dir}/tokens.css" www/vendor/eeca/tokens.css

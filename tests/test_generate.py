@@ -106,12 +106,6 @@ class TokenTests(unittest.TestCase):
     def test_source_is_valid_json(self):
         self.assertIsInstance(json.loads(TOKENS_PATH.read_text()), dict)
 
-    def test_version_is_semantic(self):
-        self.assertRegex(
-            self.tokens["version"],
-            r"^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z.-]+)?$",
-        )
-
 
 if __name__ == "__main__":
     unittest.main()

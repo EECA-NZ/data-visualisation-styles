@@ -17,7 +17,7 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Validate semantic version
+      - name: Validate semantic tag
         id: version
         shell: bash
         run: |
@@ -30,12 +30,6 @@ jobs:
           fi
 
           version="${tag#v}"
-          token_version="$(python3 -c 'import json; print(json.load(open("tokens/tokens.json"))["version"])')"
-          if [[ "$token_version" != "$version" ]]; then
-            echo "::error ::Tag version '$version' does not match tokens/tokens.json version '$token_version'."
-            exit 1
-          fi
-
           if [[ "$version" == *-* ]]; then
             echo "prerelease=true" >> "$GITHUB_OUTPUT"
           else
@@ -59,6 +53,14 @@ jobs:
           mkdir -p release "$package_dir"
           cp -R dist "$package_dir/dist"
           cp -R maps "$package_dir/maps"
+
+          jq -n \
+            --arg version "$version" \
+            --arg tag "$GITHUB_REF_NAME" \
+            --arg commit "$GITHUB_SHA" \
+            '{version: $version, tag: $tag, commit: $commit}' \
+            > release/release-manifest.json
+          cp release/release-manifest.json "$package_dir/release-manifest.json"
 
           cp dist/json/databricks-dashboard-theme.json release/databricks-dashboard-theme.json
           cp dist/json/tokens.json release/tokens.json
