@@ -83,12 +83,23 @@ jobs:
         run: |
           set -euo pipefail
 
+          tag="$GITHUB_REF_NAME"
+          title="EECA data visualisation styles ${VERSION}"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release edit "$tag" \
+              --title "$title" \
+              --prerelease="$PRERELEASE" \
+              --verify-tag
+            gh release upload "$tag" release/* --clobber
+            exit 0
+          fi
+
           args=(
-            "$GITHUB_REF_NAME"
+            "$tag"
             release/*
             --verify-tag
             --generate-notes
-            --title "EECA data visualisation styles ${VERSION}"
+            --title "$title"
           )
           if [[ "$PRERELEASE" == "true" ]]; then
             args+=(--prerelease)

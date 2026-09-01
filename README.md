@@ -71,12 +71,18 @@ tarball, `SHA256SUMS`, and a generated manifest recording its version, tag, and
 source commit. GitHub generates the human-readable release notes from the
 commits associated with the tag.
 
-To release, merge the approved style changes and tag that exact commit:
+To release, merge the approved style changes and push a tag for that exact
+commit. The workflow creates the corresponding GitHub Release, so a Release
+does not need to be published manually through the GitHub UI:
 
 ```bash
 git tag v0.1.0
 git push origin v0.1.0
 ```
+
+If a GitHub Release already exists for the tag, the workflow updates its title
+and uploads the generated assets with replacement enabled. This makes a failed
+or manually initiated release safely rerunnable without moving the tag.
 
 The GitHub Pages site at
 https://eeca-nz.github.io/data-visualisation-styles/ remains useful for the
