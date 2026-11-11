@@ -38,7 +38,7 @@ not be stored or published from this repository. Each authorised application
 is responsible for serving its licensed copies.
 
 Plotly uses Arial because static chart exports cannot be assumed to have
-National 2 installed. Databricks uses its supported Inter font. The Databricks
+National 2 installed. Databricks uses Segoe UI. The Databricks
 font roles use the Enquire dashboard scale: 14px for base text, field titles,
 and descriptions; 16px for field values and widget titles. The Databricks theme
 JSON can be refined after the live development-workspace theme has been
