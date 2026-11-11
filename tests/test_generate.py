@@ -81,7 +81,7 @@ class TokenTests(unittest.TestCase):
     def test_platform_fonts_use_supported_defaults(self):
         platforms = self.tokens["typography"]["platforms"]
         self.assertEqual(platforms["charts"][0], "Arial")
-        self.assertEqual(platforms["databricks"], ["Inter"])
+        self.assertEqual(platforms["databricks"], ["Segoe UI"])
 
     def test_databricks_font_sizes_match_enquire_dashboard(self):
         theme = databricks_theme(self.tokens)
